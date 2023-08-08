@@ -1,0 +1,25 @@
+site_name: gravlax
+
+plugins:
+- search
+- mkdocstrings:
+    handlers:
+      python:
+        selection:
+          inherited_members: true
+        rendering:
+            show_root_heading: true
+            show_root_full_path: true
+            show_if_no_docstring: false
+            show_signature_annotations: true
+            merge_init_into_class: false
+            members_order: source
+
+nav:
+  - Home: 'index.md'
+
+theme:
+  name: material
+  palette:
+    primary: black
+    accent: cyan
