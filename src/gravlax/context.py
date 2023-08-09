@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 import timeit
-from typing import Any, Callable
+import typing as tp
+from types import TracebackType
 
 import jax.numpy as jnp
 
-from gravlax.types import PyTree
-
 from .tree_utils import reduce_pytree, tree_stack
+from .types import PyTree
 
 
 def prepend_to_key(d, prefix):
@@ -31,14 +31,22 @@ class BatchManager:
     def register_loss(self, loss_dict: dict[str, PyTree]):
         self._loss_list.append(loss_dict)
 
-    def reduce(self, op: Callable[..., PyTree] = jnp.mean, **op_kwargs: dict[str, Any]):
+    def reduce(self, op: tp.Callable[..., PyTree] = jnp.mean, **op_kwargs: dict[str, object]):
         return prepend_to_key(reduce_pytree(tree_stack(self._loss_list), op, **op_kwargs), prefix=f'{self.name}_')
 
     def __enter__(self) -> BatchManager:
         self.start_time = timeit.default_timer()
         return self
 
-    def __exit__(self, *args):
+    @tp.overload
+    def __exit__(self, exc_type: type[BaseException], exc_val: BaseException, exc_tb: TracebackType) -> None:
+        ...
+
+    @tp.overload
+    def __exit__(self, exc_type: None, exc_val: None, exc_tb: None) -> None:
+        ...
+
+    def __exit__(self, exc_type: type[BaseException] | None, exc_val: BaseException | None, exc_tb: TracebackType | None) -> None:
 
         self.time = self.time_elapsed
 
